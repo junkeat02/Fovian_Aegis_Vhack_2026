@@ -18,9 +18,11 @@ async def send_status(drones, url=URL):
                 while True:
                     drone_status = {}
                     for drone in drones:
+                        drone_status['id'] = drone.id
                         drone_status["battery"] = drone.battery_level
                         drone_status["survivors"] = drone.survivor_found
                         drones_status[f"drone{drone.id}"] = drone_status
+                        drone_status = {}
                     await websocket.send(json.dumps(drones_status))
                     await asyncio.sleep(interval)
         except Exception as e:

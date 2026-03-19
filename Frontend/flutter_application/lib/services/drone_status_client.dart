@@ -4,6 +4,7 @@ import 'dart:convert';
 import "package:web_socket_channel/web_socket_channel.dart";
 import "package:flutter/material.dart";
 import "package:flutter_application/components/container.dart";
+import 'package:flutter_application/services/drones_status_tracker.dart';
 
 class DroneStatusClient extends StatefulWidget {
   final String host;
@@ -44,7 +45,9 @@ class DroneStatusClientState extends State<DroneStatusClient> {
   void retryConnection() {
     _isConnected = false;
     _channel?.sink.close();
-
+    for (var id in connectionTracker.droneIds) {
+      connectionTracker.updateDroneStatus(id, false);
+    }
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(const Duration(seconds: 2), connectServer);
   }
@@ -104,27 +107,23 @@ class DroneStatusClientState extends State<DroneStatusClient> {
           try {
             Map<String, dynamic> drones = jsonDecode(snapshot.data.toString());
             // debugPrint(drones.toString());
-            dynamic drone1 = drones["drone0"];
-            dynamic drone2 = drones["drone1"];
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              for (var key in drones.keys) {
+                connectionTracker.updateDroneStatus(key, true);
+              }
+            });
             return Row(
               children: [
-                Expanded(
-                  flex: 1,
-                  child: _buildDroneStatus(
-                    drone1["id"] ?? 0,
-                    drone1["battery"] ?? 0,
-                    drone1["survivors"] ?? 0,
+                for (var entry in drones.entries)
+                  Expanded(
+                    flex: 1,
+                    child: _buildDroneStatus(
+                      entry.value["id"] ?? 0,
+                      entry.value["battery"] ?? 0,
+                      entry.value["survivors"] ?? 0,
+                      droneKey: entry.key,
+                    ),
                   ),
-                ),
-
-                Expanded(
-                  flex: 1,
-                  child: _buildDroneStatus(
-                    drone2["id"] ?? 0,
-                    drone2["battery"] ?? 0,
-                    drone2["survivors"] ?? 0,
-                  ),
-                ),
               ],
             );
           } catch (e) {
@@ -146,14 +145,52 @@ class DroneStatusClientState extends State<DroneStatusClient> {
     );
   }
 
-  Widget _buildDroneStatus(int id, int battery, int survivors) {
+  Widget _buildDroneStatus(
+    int id,
+    int battery,
+    int survivors, {
+    required String droneKey,
+  }) {
     return DataContainer(
+      // if (connectionTracker.isDroneOnline("drone$id"))
+      opacity_: connectionTracker.isDroneOnline("drone$id") ? 1 : 0.5,
+      borRadius: 6,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFont("Drone: $id", 20),
-          _buildFont("Battery: $battery%", 20),
-          _buildFont("Survivors: $survivors", 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildFont("DRONE $id", 14, fontWeight_: FontWeight.bold),
+              Icon(Icons.wifi, color: Colors.greenAccent, size: 16),
+            ],
+          ),
+          SizedBox(height: 8),
+          // Battery Bar
+          Stack(
+            children: [
+              Container(
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: battery / 100,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: battery > 20 ? Colors.greenAccent : Colors.redAccent,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          _buildFont("Battery: $battery%", 14),
+          _buildFont("Survivors: $survivors", 14),
         ],
       ),
     );
@@ -162,6 +199,7 @@ class DroneStatusClientState extends State<DroneStatusClient> {
   Widget _buildFont(
     String content,
     double fontSize_, {
+    FontWeight fontWeight_ = FontWeight.normal,
     String fontFam = "Roboto",
     Color fontColor_ = const Color.fromARGB(255, 252, 252, 252),
   }) {
@@ -170,6 +208,7 @@ class DroneStatusClientState extends State<DroneStatusClient> {
       style: TextStyle(
         fontSize: fontSize_,
         fontFamily: fontFam,
+        fontWeight: fontWeight_,
         color: fontColor_,
       ),
     );

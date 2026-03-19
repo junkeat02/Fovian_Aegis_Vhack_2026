@@ -8,6 +8,7 @@ class DataContainer extends StatelessWidget{
   final double horMargin;
   final double vertMargin;
   final double borRadius;
+  final double opacity_;
 
   const DataContainer({
     super.key,
@@ -18,20 +19,23 @@ class DataContainer extends StatelessWidget{
     this.horMargin = 10,
     this.vertMargin = 10,
     this.borRadius = 20,
+    this.opacity_ = 1,
     });
 
   @override
   Widget build(BuildContext context){
-    return Center(
+    return Opacity(
+      opacity: opacity_,
+      child: Center(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: vertPadding, horizontal: horPadding),
         margin: EdgeInsets.symmetric(vertical: vertMargin, horizontal: horMargin),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(borRadius)
+          borderRadius: BorderRadius.circular(borRadius),          
         ),
         child: child
         ),
-    );
+    ));
   }
 }
