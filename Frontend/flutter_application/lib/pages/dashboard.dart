@@ -110,18 +110,46 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildRightPanel() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 4,
-          child: Center(
-            child: DataContainer(borRadius: 6, child: ChatScreen()),
-          ),
-        ),
+// In _buildRightPanel(), add it above the chat:
+Widget _buildRightPanel() {
+  return Column(
+    children: [
+      Expanded(flex: 2, child: _buildRescueProgress()), // New Progress Section
+      Expanded(flex: 2, child: Center(child: DroneStatusClient())),
+      Expanded(
+        flex: 4,
+        child: Center(child: DataContainer(borRadius: 6, child: ChatScreen())),
+      ),
+    ],
+  );
+}
 
-        Expanded(flex: 1, child: Center(child: DroneStatusClient())),
-      ],
-    );
-  }
+  Widget _buildRescueProgress() {
+  return ListenableBuilder(
+    listenable: connectionTracker, // Or your specific rescue tracker
+    builder: (context, child) {
+      int found = connectionTracker.totalSurvivorsFound; 
+      int total = 5; // Your NO_OF_SURVIVORS variable
+      
+      return DataContainer(
+        borRadius: 10,
+        backgroundColor: Colors.black26,
+        child: Column(
+          children: [
+            _buildFont("MISSION PROGRESS", 14, fontColor_: Colors.orangeAccent),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: found / total,
+              backgroundColor: Colors.white10,
+              color: Colors.greenAccent,
+              minHeight: 12,
+            ),
+            const SizedBox(height: 4),
+            _buildFont("$found / $total Survivors Located", 12),
+          ],
+        ),
+      );
+    },
+  );
+}
 }

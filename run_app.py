@@ -1,16 +1,9 @@
 import subprocess
 import time
 import os
-import shutil
-import signal
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def find_flutter():
-    flutter = shutil.which("flutter")
-    if flutter is None:
-        raise Exception("Flutter not found in PATH. Please run 'flutter doctor'.")
-    return flutter
 
 def start_websocket(python_path):
     return subprocess.Popen(
@@ -24,12 +17,18 @@ def start_simulation(python_path):
         cwd=os.path.join(BASE_DIR, "Simulation")
     )
 
-def start_flutter():
-    flutter = find_flutter()
+def start_mcp_server(python_path):
     return subprocess.Popen(
-        [flutter, "run", "-d", "chrome"],
-        cwd=os.path.join(BASE_DIR, "Frontend")
+        [python_path, "server.py"],
+        cwd=os.path.join(BASE_DIR, "MCP")
     )
+
+def start_mcp_tools(python_path):
+    return subprocess.Popen(
+        [python_path, "tools.py"],
+        cwd=os.path.join(BASE_DIR, "MCP")
+    )
+
 
 def terminate_process(proc, name):
     if proc and proc.poll() is None:
@@ -45,23 +44,30 @@ if __name__ == "__main__":
     print("🚀 Starting Fovian Aegis System...")
 
     # Use venv python
-    python_path = os.path.join(BASE_DIR, "Simulation", ".venv", "Scripts", "python.exe")
+    sim_path = os.path.join(BASE_DIR, "Simulation", ".venv", "Scripts", "python.exe")
+    mcp_path = os.path.join(BASE_DIR, "MCP", ".venv", "Scripts", "python.exe")
 
     ws = None
     sim = None
-    flutter = None
+    server = None
+    tools = None
 
     try:
-        ws = start_websocket(python_path)
+        ws = start_websocket(sim_path)
         print("✅ WebSocket started")
         time.sleep(2)
 
-        sim = start_simulation(python_path)
+        sim = start_simulation(sim_path)
         print("✅ Simulation started")
         time.sleep(2)
 
-        flutter = start_flutter()
-        print("✅ Flutter frontend started")
+        server = start_mcp_server(mcp_path)
+        print("✅ WebSocket started")
+        time.sleep(2)
+
+        tools = start_mcp_tools(mcp_path)
+        print("✅ WebSocket started")
+        time.sleep(2)
 
         print("\nPress Ctrl+C to stop all services...\n")
 
@@ -74,6 +80,7 @@ if __name__ == "__main__":
     finally:
         terminate_process(ws, "WebSocket Server")
         terminate_process(sim, "Simulation")
-        terminate_process(flutter, "Flutter")
+        terminate_process(server, "MCP Server")
+        terminate_process(tools, "MCP Tools")
 
         print("✅ All processes stopped. Goodbye!")

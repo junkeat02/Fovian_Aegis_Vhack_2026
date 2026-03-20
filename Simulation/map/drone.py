@@ -1,6 +1,8 @@
+import math
 from map.sprites import Sprites
 import pygame
 import map.input as input
+import math
 
 STATUS = [ "STAY", "MOVING", "SCANNING"]
 
@@ -10,6 +12,7 @@ class Drone(Sprites):
 
         # Status
         self.id = id
+        self.survivor_xy = []  # coordinates of survivors found
         self.survivor_found = 0
         self.battery_level = battery_level
         self.current_status = STATUS[0]
@@ -33,6 +36,25 @@ class Drone(Sprites):
     def get_battery_level(self):
         return self.battery_level
     
+    # map/drone.py
+
+    def scan_for_survivors(self, survivors_list):
+        """Detects survivors within a 1-grid radius."""
+        detection_radius = self.transform_scale[0] * 1.5 
+        found_count = 0
+        
+        for survivor in survivors_list:
+            sx, sy = survivor.get_xy()
+            distance = math.sqrt((self.x - sx)**2 + (self.y - sy)**2)
+            
+            if distance < detection_radius:
+                found_count += 1
+                # You could add logic here to 'remove' the survivor from the map
+                
+        self.survivor_found += found_count
+        return found_count
+    
+    #---Testing functions ---#
     def go_left(self, steps=1):
         self.current_status = STATUS[1]
         self.x -= self.speed * steps
@@ -57,6 +79,7 @@ class Drone(Sprites):
         if self.y > self.size:
             self.y = self.size
 
+
     def manual_move(self):
         self.current_status = STATUS[1]
         if input.is_key_pressed(pygame.K_w):
@@ -71,4 +94,21 @@ class Drone(Sprites):
         elif input.is_key_pressed(pygame.K_d):
             self.go_right()
             # print("go right")
+
+    #---Testing end ---#
     
+    def x_move(self, x):
+        self.current_status = STATUS[1]
+        if (self.x > 0 and self.x < self.size):
+            self.x += self.speed * x
+
+    def y_move(self, y):
+        self.current_status = STATUS[1]
+        if (self.y > 0 and self.y < self.size):
+            self.y += self.speed * y
+
+
+    def move(self, x, y):
+        self.current_status = STATUS[1]
+        self.x_move(x)
+        self.y_move(y)

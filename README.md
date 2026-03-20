@@ -6,8 +6,13 @@ Fovian Aegis is a decentralized swarm intelligence system designed for autonomou
 
 ## 🧩 Project Structure
 
-The repository is organized into three main components:
+The repository is organized into three core interconnected layers:
 
+- Frontend: Flutter-based Command Dashboard for real-time visualization, telemetry, and manual override.
+
+- MCP (Model Context Protocol): The "nervous system" consisting of a FastAPI tool bridge and a local reasoning engine.
+
+- Simulation: A high-fidelity disaster environment modeled in Pygame with a dedicated FastAPI controller for drone physics and sensors.
 
 
 ---
@@ -25,14 +30,14 @@ The **Frontend** directory contains a Flutter-based application designed for web
 
 ## 🧠 MCP (Model Context Protocol)
 
-The **MCP** module represents the core backend logic for agent-based decision-making.
+The MCP module acts as the bridge between the AI's "thought process" and the simulation's "actions."
 
-> ⚠️ Status: Not yet implemented (planned for next development phase)
+### Key Components
+- Tool Bridge (server.py): A FastAPI server that interprets natural language, selects appropriate tools using Qwen3:8b, and executes commands.
 
-### Planned Features:
-- Tool abstraction layer for drone control
-- Integration with AI agent for task planning
-- Dynamic drone discovery and coordination
+- Ollama Integration: Runs locally to ensure the system remains functional during internet outages—a critical requirement for disaster response.
+
+- Autonomous Function Calling: Implements tools such as move_drone, scan_for_survivors, and get_system_report.
 
 ---
 
@@ -49,12 +54,23 @@ The **Simulation** module models drone behavior and disaster environments using 
 ---
 
 ## 🔗 System Overview
+The system architecture follows a Tri-Server model:
 
+1. Simulation (Port 8002): Handles physics, grid logic, and drone state.
+
+2. MCP Bridge (Port 8003): Processes AI tool calls and routes them to the simulation.
+
+3. Ollama (Local): Provides the reasoning capabilities for the agent.
+
+---
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.10
+- Python 3.10+
+
 - Flutter SDK
+
+- Ollama (Ensure the qwen3:8b model is pulled)
 
 ---
 
@@ -69,7 +85,7 @@ The **Simulation** module models drone behavior and disaster environments using 
 
 ## ▶️ Running the System
 
-You can launch the entire system (WebSocket server, simulation, and frontend) using a single command:
+You can launch the entire system (WebSocket server, simulation, and MCP) using a single command, you still need to run the command in step 5 of the Manual step as flutter required to run under the root of the project:
 
 ```bash
 python run_app.py
@@ -93,13 +109,32 @@ cd Simulation
 .\.venv\Scripts\activate
 python websocket_server.py
 ```
-
+## 🧩 Step 2 — Start the simulation
 In new terminal:
 ```bash
 cd Simulation
+.\.venv\Scripts\activate
 python main.py
+
+```
+## 🧩 Step 3 — Start the MCP Server
+In new terminal:
+```bash
+cd MCP
+.\.venv\Scripts\activate
+python server.py
+
+```
+## 🧩 Step 4 — Start the MCP tools
+In new terminal:
+```bash
+cd MCP
+.\.venv\Scripts\activate
+python tools.py
+
 ```
 
+## 🧩 Step 5 — Start the flutter application
 In another new terminal:
 ```bash
 cd Frontend/flutter_application

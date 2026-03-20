@@ -11,6 +11,7 @@ import asyncio
 import websocket_clients.screen_streamer as screen_streamer
 import websocket_clients.drone_status as drone_status
 
+FASTAPI_PORT = 8002
 
 NO_OF_DRONES = 2
 NO_OF_SURVIVORS = 5
@@ -52,13 +53,19 @@ def go_up(drone_id:int, y: int):
 def go_down(drone_id:int, y: int):
     drones[drone_id].go_down(y)
 
+@app.get("/scan/{drone_id}")
+def scan(drone_id: int):
+    # Call the sensor logic we discussed earlier
+    found = drones[drone_id].scan_for_survivors(survivors)
+    return {"drone_id": drone_id, "found": found}
+
 @app.get("/get_battery/{drone_id}")
 def get_battery(drone_id:int):
     battery_level = drones[drone_id].get_battery_level()
     return f"Drone {drone_id} bat: {battery_level}"
 
 def run_api():
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=FASTAPI_PORT)
 
 async def game_loop(screen, map, survivors, drones):
     interval = 1/60  # 60FPS

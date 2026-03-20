@@ -12,6 +12,7 @@ dependencies:
   flutter_bootstrap5: ^1.1.1+1
   flutter_chat_core: ^2.9.0
   flutter_chat_ui: ^2.11.1
+  http: ^1.6.0
   web_socket_channel: ^3.0.3
 
 dev_dependencies:
