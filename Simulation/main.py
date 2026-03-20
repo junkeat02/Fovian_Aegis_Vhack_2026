@@ -62,7 +62,8 @@ def run_api():
 
 async def game_loop(screen, map, survivors, drones):
     interval = 1/60  # 60FPS
-    while True:
+    running = True
+    while running:
         # to get the event happening in within the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
