@@ -114,7 +114,7 @@ class _DashboardState extends State<Dashboard> {
 Widget _buildRightPanel() {
   return Column(
     children: [
-      Expanded(flex: 2, child: _buildRescueProgress()), // New Progress Section
+      // Expanded(flex: 2, child: _buildRescueProgress()), // New Progress Section
       Expanded(flex: 2, child: Center(child: DroneStatusClient())),
       Expanded(
         flex: 4,
@@ -124,32 +124,37 @@ Widget _buildRightPanel() {
   );
 }
 
-  Widget _buildRescueProgress() {
-  return ListenableBuilder(
-    listenable: connectionTracker, // Or your specific rescue tracker
-    builder: (context, child) {
-      int found = connectionTracker.totalSurvivorsFound; 
-      int total = 5; // Your NO_OF_SURVIVORS variable
-      
-      return DataContainer(
-        borRadius: 10,
-        backgroundColor: Colors.black26,
-        child: Column(
-          children: [
-            _buildFont("MISSION PROGRESS", 14, fontColor_: Colors.orangeAccent),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: found / total,
-              backgroundColor: Colors.white10,
-              color: Colors.greenAccent,
-              minHeight: 12,
-            ),
-            const SizedBox(height: 4),
-            _buildFont("$found / $total Survivors Located", 12),
-          ],
-        ),
-      );
-    },
-  );
-}
+Widget _buildRescueProgress() {
+    return ListenableBuilder(
+      listenable: connectionTracker,
+      builder: (context, child) {
+        int found = connectionTracker.totalSurvivorsFound;
+        int total = 5; 
+        
+        // Calculate progress percentage safely
+        double progressValue = (total > 0) ? (found / total) : 0.0;
+
+        return DataContainer(
+          borRadius: 10,
+          backgroundColor: Colors.black26,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildFont("MISSION PROGRESS", 14, fontColor_: Colors.orangeAccent),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                // Clamp value between 0.0 and 1.0 to prevent layout errors
+                value: progressValue.clamp(0.0, 1.0),
+                backgroundColor: Colors.white10,
+                color: Colors.greenAccent,
+                minHeight: 12,
+              ),
+              const SizedBox(height: 4),
+              _buildFont("$found / $total Survivors Located", 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

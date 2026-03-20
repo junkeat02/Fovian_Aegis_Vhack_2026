@@ -16,6 +16,8 @@ class Drone(Sprites):
         self.survivor_found = 0
         self.battery_level = battery_level
         self.current_status = STATUS[0]
+        pygame.font.init()
+        self.font = pygame.font.SysFont("Arial", 22, bold=True)
         
         # Scaling and movement
         self.speed = movement_speed * min(transform_scale)
@@ -31,7 +33,7 @@ class Drone(Sprites):
         self.initial_y = self.y
 
     def get_xy(self):
-        return (self.x, self.y)
+        return (self.x / self.transform_scale[0], self.y / self.transform_scale[1])
 
     def get_battery_level(self):
         return self.battery_level
@@ -40,7 +42,7 @@ class Drone(Sprites):
 
     def scan_for_survivors(self, survivors_list):
         """Detects survivors within a 1-grid radius."""
-        detection_radius = self.transform_scale[0] * 1.5 
+        detection_radius = self.transform_scale[0] * 2 
         found_count = 0
         
         for survivor in survivors_list:
@@ -112,3 +114,18 @@ class Drone(Sprites):
         self.current_status = STATUS[1]
         self.x_move(x)
         self.y_move(y)
+
+    def update(self, screen):
+        # 1. Draw the actual drone image (from Sprites class)
+        screen.blit(self.image, (self.x, self.y))
+
+        # 2. Render the ID Text
+        # (Text, Antialias, Color)
+        id_surface = self.font.render(f"ID:{self.id}", True, (255, 255, 255)) 
+        
+        # 3. Draw a small dark background circle so the ID is readable on any background
+        text_center = (self.x + 15, self.y + 15)
+        pygame.draw.circle(screen, (0, 0, 0, 150), text_center, 12)
+        
+        # 4. Draw the text on top
+        screen.blit(id_surface, (self.x + 5, self.y + 5))

@@ -4,7 +4,7 @@ from map.drone import Drone
 from map.map import Map
 from map.survivor import Survivor
 from map import input
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import threading
 import uvicorn
 import asyncio
@@ -55,14 +55,28 @@ def go_down(drone_id:int, y: int):
 
 @app.get("/scan/{drone_id}")
 def scan(drone_id: int):
-    # Call the sensor logic we discussed earlier
+    if drone_id >= len(drones) or drone_id < 0:
+        return {"drone_id": drone_id, "found": 0, "error": "Invalid ID"}
+    
+    # Ensure this method in Drone class returns an integer
     found = drones[drone_id].scan_for_survivors(survivors)
-    return {"drone_id": drone_id, "found": found}
+    return {"drone_id": drone_id, "found": int(found)}
 
 @app.get("/get_battery/{drone_id}")
-def get_battery(drone_id:int):
+def get_battery(drone_id: int):
+    if drone_id >= len(drones) or drone_id < 0:
+        raise HTTPException(status_code=404, detail=f"Drone {drone_id} not found. Available IDs: 0 to {len(drones)-1}")
+    
     battery_level = drones[drone_id].get_battery_level()
-    return f"Drone {drone_id} bat: {battery_level}"
+    return {"drone_id": drone_id, "battery": f"{battery_level}%"}
+
+@app.get("/get_xy/{drone_id}")
+def get_drone_coords(drone_id: int):
+    if drone_id >= len(drones) or drone_id < 0:
+        raise HTTPException(status_code=404, detail=f"Drone {drone_id} not found.")
+        
+    xy = drones[drone_id].get_xy()
+    return {"drone_id": drone_id, "position": xy}
 
 def run_api():
     uvicorn.run(app, host="127.0.0.1", port=FASTAPI_PORT)
