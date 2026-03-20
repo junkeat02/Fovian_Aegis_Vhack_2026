@@ -6,6 +6,8 @@ Fovian Aegis is a decentralized swarm intelligence system designed for autonomou
 
 ## 🧩 Project Structure
 
+
+
 The repository is organized into three core interconnected layers:
 
 - Frontend: Flutter-based Command Dashboard for real-time visualization, telemetry, and manual override.
@@ -71,6 +73,8 @@ The system architecture follows a Tri-Server model:
 - Flutter SDK
 
 - Ollama (Ensure the qwen3:8b model is pulled)
+
+- Groq (For testing due to equipment's constrainst as the AI agent)
 
 ---
 
